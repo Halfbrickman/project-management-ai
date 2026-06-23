@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     String
+
+  managedProjects Project[] @relation("ProjectManager")
+
+  assignedTasks Task[] @relation("TaskAssignee")
+
+  reports DailyReport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  startDate   DateTime
+  deadline    DateTime
+  status      String
+
+  pmId Int
+
+  pm User @relation("ProjectManager", fields: [pmId], references: [id])
+
+  tasks Task[]
+
+  aiRecommendations AIRecommendation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Task {
+  id Int @id @default(autoincrement())
+
+  projectId  Int
+  assignedTo Int
+
+  title       String
+  description String? @db.Text
+
+  deadline DateTime
+
+  progress Int @default(0)
+
+  status String
+
+  estimatedDuration Int
+
+  priority String
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  assignee User @relation("TaskAssignee", fields: [assignedTo], references: [id])
+
+  reports DailyReport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tasks")
+}
+
+model DailyReport {
+  id Int @id @default(autoincrement())
+
+  taskId Int
+  userId Int
+
+  description String @db.Text
+
+  progressUpdate Int
+
+  reportDate DateTime
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("daily_reports")
+}
+
+model AIRecommendation {
+  id Int @id @default(autoincrement())
+
+  projectId Int
+
+  summary String @db.Text
+
+  recommendation String @db.Text
+
+  generatedAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("ai_recommendations")
+}
