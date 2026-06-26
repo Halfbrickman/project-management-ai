@@ -105,9 +105,11 @@ model AIRecommendation {
 
   projectId Int
 
-  summary String @db.Text
+  summary String
 
-  recommendation String @db.Text
+  risks Json
+
+  recommendations Json
 
   generatedAt DateTime @default(now())
 
